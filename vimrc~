@@ -1,0 +1,305 @@
+" options
+" {{{
+
+set encoding=utf-8
+set fileencodings=ucs-bom,utf-8
+
+" fuck vi
+set nocompatible
+
+set guifont=Courier\ New\ 12
+if has("gui_running")
+  if has("gui_gtk2")
+    set guifont=Inconsolata\ 14
+  elseif has("gui_win32")
+    set guifont=Consolas:h11:cANSI
+  endif
+endif
+colorscheme inkpot
+
+" show hidden/invisible characters, like line endings and show tabs
+set listchars=eol:$,tab:>-,trail:~,extends:>,precedes:<
+set list " make this a togglable option. " this is enabled because bad whitespace highlighting with no background is invisible otherwise. remember to toggle off before doing tmux C-M-d
+
+" main options
+set diffopt+=vertical
+" This is bad as a default, but needs to be easily togglable
+"set diffopt+=iwhite
+set isk+=é
+" this allows filename completion with spaces. however, it also means spaces before the path name mess it up
+set isf+=32
+set isf+=\*
+set isf+=(
+set isf+=)
+set isf+=[
+set isf+=]
+set isf+=:
+set isf+=\?
+" add ampersand to filename selection
+" ASCII number
+"set isf+=38
+" add questionmark to filename selection for urls
+set isf+=63
+" add ampersand ( use ascii command line  to work these out )
+set isf+=38
+silent! set norelativenumber
+" this stops commands like :grep outputting to the shell
+"set relativenumber
+set shellpipe=&>
+set maxmempattern=2000
+set switchbuf=usetab
+" this means that F7 toggles paste in input mode as well as normal mode
+set pastetoggle=<F7>
+" doesn't work unless binary is set (which is an annoying predicament)
+set nostartofline
+set noeol
+set hidden
+set autoindent
+set autoread
+set autowrite
+set backspace=indent,eol,start
+set lazyredraw
+set expandtab
+set formatoptions-=t
+set history=50
+set nohlsearch
+set ignorecase smartcase
+set incsearch
+set ls=2
+set nobackup
+set nomousehide
+set nowrap
+set vb t_vb=
+set novisualbell
+set scrolloff=5
+set sidescrolloff=12
+set shiftwidth=4
+set shortmess+=r
+set showmode
+"this does NOT cause 'press enter or type command to continue'
+set showcmd
+set showtabline=0
+set sm
+set smartcase
+set smartindent
+set copyindent
+set preserveindent
+set smarttab
+set splitright
+set tabstop=4
+set tags=~/.tags
+set notitle
+" setting virtualedit to onemore fixes the ‘cw’ bug for words at end of
+" file
+"set virtualedit=onemore
+set virtualedit=all
+if &term == "xterm"
+  set title
+endif
+set textwidth=72
+set visualbell t_vb=
+if version > 720
+    set undoreload=0
+endif
+
+set matchpairs+=<:>
+set matchpairs+=‘:’
+set matchpairs+=“:”
+
+" syntax highlighting is messed up by this
+"let g:EasyMotion_do_shade = 0
+
+set thesaurus+=~/.vim/mthes10/thesaurus.txt
+set completeopt=longest,menuone
+
+" vim command-line autocomplete, not regular autocomplete
+set wildmenu
+set wildmode=list:longest,full
+
+" where swap files go now
+set noswapfile " Swap is disabled. Using git anyway.
+"set backupdir=/export/bulk/local-home/smulliga/vim-tmp/backup
+"set directory=/export/bulk/local-home/smulliga/vim-tmp/swap
+"set undodir=/export/bulk/local-home/smulliga/vim-tmp/undo
+
+" vim uses x11 clipboard
+"set clipboard=unnamed
+set clipboard=unnamedplus
+set go=
+
+" display cursor hilight
+" {{{
+if has('statusline')
+   " Status line detail:
+   " %f     file path
+   " %F     full file path
+   " %y     file type between braces (if defined)
+   " %([%R%M]%)   read-only, modified and modifiable flags between braces
+   " %{'!'[&ff=='default_file_format']}
+   "        shows a '!' if the file format is not the platform
+   "        default
+   " %{'$'[!&list]}  shows a '*' if in list mode
+   " %{'~'[&pm=='']} shows a '~' if in patchmode
+   " (%{synIDattr(synID(line('.'),col('.'),0),'name')})
+   "        only for debug : display the current syntax item name
+   " %=     right-align following items
+   " #%n    buffer number
+   " %l/%L,%c%V   line number, total number of lines, and column number
+   function! SetStatusLineStyle()
+      if &stl == '' || &stl =~ 'synID'
+         " what's up with this?
+         "let &stl="%F %y%([%R%M]%)%{'!'[&ff=='".&ff."']}%{'$'[!&list]}%{'~'[&pm=='']}%=#%n %l/%L,%c%V"
+         let &stl="%{system('echo -n \"'.expand('%:p').'\" | minimise.sh')} %y%([%R%M]%)%{'!'[&ff=='".&ff."']}%{'$'[!&list]} (%{synIDattr(synID(line('.'),col('.'),0),'name')})%r%=%b\ 0x%B\ \ %l,%c%V\ %P  %=#%n %l/%L,%c%V"
+         "let &stl="%{system('echo -n \"'.expand('%:p').'\"')} %y%([%R%M]%)%{'!'[&ff=='".&ff."']}%{'$'[!&list]} (%{synIDattr(synID(line('.'),col('.'),0),'name')})%r%=%b\ 0x%B\ \ %l,%c%V\ %P  %=#%n %l/%L,%c%V"
+      else
+         " normal sl
+         let &stl="%F %y%([%R%M]%)%{'!'[&ff=='".&ff."']}%{'$'[!&list]} (%{synIDattr(synID(line('.'),col('.'),0),'name')})%=#%n %l/%L,%c%V"
+
+         " Show ascii value of current character
+         let &stl="%<%f%h%m%r%=%b\ 0x%B\ \ %l,%c%V\ %P"
+
+         " Show normal sl and ascii value of current character
+         let &stl="%F %y%([%R%M]%)%{'!'[&ff=='".&ff."']}%{'$'[!&list]} (%{synIDattr(synID(line('.'),col('.'),0),'name')})%r%=%b\ 0x%B\ \ %l,%c%V\ %P  %=#%n %l/%L,%c%V"
+      endif
+   endfunc
+   " Switch between the normal and vim-debug modes in the status line
+   nmap _ds :call SetStatusLineStyle()<CR>
+   call SetStatusLineStyle()
+   " Window title
+   if has('title')
+      set titlestring=%t%(\ [%R%M]%)
+   endif
+endif
+" }}}
+
+" syntax highlighting
+syntax on
+filetype plugin indent on
+
+" default comment symbols
+let g:StartComment="#"
+let g:EndComment=""
+
+highlight Cursor gui=reverse guifg=NONE guibg=NONE
+set guicursor=i-n-v-c:block-Cursor
+set guicursor+=i-n-v-c:ver100-Cursor
+set guicursor+=i-n-v-c:blinkon0
+
+set keymap=dvorak
+set imsearch=0
+
+" enable mouse support (all)
+set mouse=a
+
+silent! set ttymouse=xterm2
+
+set notimeout
+set nottimeout
+set nocscopeverbose
+
+"old glib syntax
+let glib_enable_deprecated = 1
+let glib_deprecated_errors = 1
+
+set nocscopeverbose
+
+set foldexpr=FoldBrace()
+"set foldmethod=expr
+
+" scrollbinding works vertically as well as horizontally
+set scrollopt=ver,jump,hor
+
+if ! &diff
+    silent! setlocal autochdir
+endif
+
+"for gf(go file)
+"doesn't work with overrided gf function
+set path+=../
+set path+=../../
+set path+=../../../
+set path+=../../../../
+set path+=../../../../../
+set path+=../../../../../../
+set path+=../../../../../../../
+
+" }}}
+
+" cinoptions
+" {{{
+set cino+=(0
+set cino+=:0
+set cino+=g0
+" }}}
+
+" functions/commands
+" {{{
+
+" open files with globbing
+" {{{
+command! -complete=file -nargs=+ Etabs call s:ETW('tabnew', <f-args>)
+command! -complete=file -nargs=+ Ewindows call s:ETW('new', <f-args>)
+command! -complete=file -nargs=+ Evwindows call s:ETW('vnew', <f-args>)
+command! -complete=file -nargs=+ Ebuffers call s:ETW('argadd', <f-args>)
+
+function! s:ETW(what, ...)
+  for f1 in a:000
+    let files = glob(f1)
+    if files == ''
+      execute a:what . ' ' . escape(f1, '\ "')
+    else
+      for f2 in split(files, "\n")
+        execute a:what . ' ' . escape(f2, '\ "')
+      endfor
+    endif
+  endfor
+endfunction
+" }}}
+
+" toggle quickfix window
+" {{{
+function! s:qf_toggle()
+    for i in range(1, winnr('$'))
+        let bnum = winbufnr(i)
+        if getbufvar(bnum, '&buftype') == 'quickfix'
+            cclose
+            return
+        endif
+    endfor
+
+    copen
+endfunction
+
+command! Ctoggle call s:qf_toggle()
+" }}}
+
+function! OpenFoldOnRestore()
+  if exists("b:doopenfold")
+    execute "normal zv"
+    if(b:doopenfold > 1)
+        execute "+".1
+    endif
+    unlet b:doopenfold
+  endif
+endfunction
+
+function! RunInTmux(cmd)
+    "silent! call system('tmux neww -n "vim-bash" "source ~/.bash_aliases;eval '.escape(shellescape(a:cmd),'"').'"')
+    silent! call system('vim-run-in-tmux.sh '.escape(shellescape(a:cmd),'"'))
+endfunction
+
+function! RunInTmuxQueue(cmd)
+    silent! call system('tsp -f vim-run-in-tmux-queue.sh '.escape(shellescape(a:cmd),'"').' & disown')
+endfunction
+
+function! RunInTmuxBackground(cmd)
+    "silent! call system('tmux neww -n "vim-bash" "source ~/.bash_aliases;eval '.escape(shellescape(a:cmd),'"').'"')
+    silent! call system('TARGS=-d vim-run-in-tmux.sh '.escape(shellescape(a:cmd),'"'))
+endfunction
+
+function! RunInTmuxAnykey(cmd)
+    "silent! call system('tmux neww -n "vim-bash" "source ~/.bash_aliases;eval '.escape(shellescape(a:cmd),'"').'"')
+    silent! call system('vim-run-in-tmux.sh '.escape(shellescape('pressanykey.sh; '.a:cmd),'"'))
+endfunction
+
+" 'super retab' c

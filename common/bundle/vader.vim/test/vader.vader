@@ -1,0 +1,21 @@
+
+# Vader file
+
+Include: include/setup.vader
+
+~ Features
+Include (Basic tests 1):                 feature/suite1.vader
+Include (Basic tests 2):                 feature/suite2.vader
+Include (Motions):                       feature/motion.vader
+Include (Different types of comments):   feature/comment.vader
+Include (Before/After):                  feature/before-after.vader
+Include (Save/Restore):                  feature/save-restore.vader
+Include (Testing Ruby/Python interface): feature/lang-if.vader
+Include (blocks w/o indentation):        feature/no-indentation.vader
+Include (Helpers):                       feature/helper.vader
+
+* Regressions
+Include (Macro set to linewise when it ends with <CR>): regression/characterwise-macro.vader
+
+Include: include/teardown.vader
+

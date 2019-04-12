@@ -1,0 +1,1 @@
+../../common/ftplugin/quickfix.vim

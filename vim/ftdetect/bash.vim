@@ -1,0 +1,1 @@
+au BufRead,BufNewFile .shellrc,.bash_aliases,bash_aliases,.shell_functions   set filetype=sh

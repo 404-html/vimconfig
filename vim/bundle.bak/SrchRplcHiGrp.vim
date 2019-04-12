@@ -1,0 +1,1 @@
+../../common/bundle/SrchRplcHiGrp.vim

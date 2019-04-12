@@ -1,0 +1,1806 @@
+" options
+" {{{
+
+set nowarn
+
+set encoding=utf-8
+set fileencodings=ucs-bom,utf-8
+
+" fuck vi
+set nocompatible
+
+set guifont=Courier\ New\ 12
+if has("gui_running")
+  if has("gui_gtk2")
+    set guifont=Inconsolata\ 14
+  elseif has("gui_win32")
+    set guifont=Consolas:h11:cANSI
+  endif
+endif
+colorscheme inkpot
+
+" show hidden/invisible characters, like line endings and show tabs
+"set listchars=nbsp:¬,eol:$,tab:>-,trail:~,extends:>,precedes:<
+set listchars=nbsp:¬,tab:>-
+"set listchars=eol:¶,tab:>-,extends:»,precedes:«,trail:•
+set list " make this a togglable option. " this is enabled because bad whitespace highlighting with no background is invisible otherwise. remember to toggle off before doing tmux C-M-d
+"setting list is not the solution
+"enable with mininimal listchars and then do preprocessing when using
+"tmux-jump.
+
+" this breaks vim-snipets.
+" disable from cursorline
+set cursorline
+
+" main options
+"set shortmess+=c
+
+
+set matchpairs+=<:>
+set matchpairs+=‘:’
+set matchpairs+=“:”
+
+" syntax highlighting is messed up by this
+"let g:EasyMotion_do_shade = 0
+
+set thesaurus+=~/.vim/mthes10/thesaurus.txt
+set completeopt=longest,menuone
+
+" vim command-line autocomplete, not regular autocomplete
+set wildmenu
+set wildmode=list:longest,full
+
+" where swap files go now
+set noswapfile " Swap is disabled. Using git anyway.
+"set backupdir=/export/bulk/local-home/smulliga/vim-tmp/backup
+"set directory=/export/bulk/local-home/smulliga/vim-tmp/swap
+"set undodir=/export/bulk/local-home/smulliga/vim-tmp/undo
+
+" vim uses x11 clipboard
+"set clipboard=unnamed
+set clipboard=unnamedplus
+set go=
+
+let b:minimisedname = ''
+function! GetMinimisedName()
+    if !exists("b:minimisedname")
+        let b:minimisedname = ''
+    endif
+    return b:minimisedname
+endfunction
+
+au BufAdd * let b:minimisedname = system('echo -n "'.expand('%:p').'" | minimise.sh')
+au BufEnter * let b:minimisedname = system('echo -n "'.expand('%:p').'" | minimise.sh')
+au BufReadPre * let b:minimisedname = system('echo -n "'.expand('%:p').'" | minimise.sh')
+au BufWritePre * let b:minimisedname = system('echo -n "'.expand('%:p').'" | minimise.sh')
+
+" display cursor hilight
+" {{{
+if has('statusline')
+   " Status line detail:
+   " %f     file path
+   " %F     full file path
+   " %y     file type between braces (if defined)
+   " %([%R%M]%)   read-only, modified and modifiable flags between braces
+   " %{'!'[&ff=='default_file_format']}
+   "        shows a '!' if the file format is not the platform
+   "        default
+   " %{'$'[!&list]}  shows a '*' if in list mode
+   " %{'~'[&pm=='']} shows a '~' if in patchmode
+   " (%{synIDattr(synID(line('.'),col('.'),0),'name')})
+   "        only for debug : display the current syntax item name
+   " %=     right-align following items
+   " #%n    buffer number
+   " %l/%L,%c%V   line number, total number of lines, and column number
+   function! SetStatusLineStyle()
+      if &stl == '' || &stl =~ 'synID'
+         " fast
+         " what's up with this?
+         "let &stl="%F %y%([%R%M]%)%{'!'[&ff=='".&ff."']}%{'$'[!&list]}%{'~'[&pm=='']}%=#%n %l/%L,%c%V"
+
+         " best
+         "let &stl="%{system('echo -n \"'.expand('%:p').'\" | minimise.sh')} %y%([%R%M]%)%{'!'[&ff=='".&ff."']}%{'$'[!&list]} (%{synIDattr(synID(line('.'),col('.'),0),'name')})%r%=%b\ 0x%B\ \ %l,%c%V\ %P  %=#%n %l/%L,%c%V"
+         let &stl="%{GetMinimisedName()} %y%([%R%M]%)%{'!'[&ff=='".&ff."']}%{'$'[!&list]} (%{synIDattr(synID(line('.'),col('.'),0),'name')})%r%=%b\ 0x%B\ \ %l,%c%V\ %P  %=#%n %l/%L,%c%V"
+
+         "let &stl="%{system('echo -n \"'.expand('%:p').'\"')} %y%([%R%M]%)%{'!'[&ff=='".&ff."']}%{'$'[!&list]} (%{synIDattr(synID(line('.'),col('.'),0),'name')})%r%=%b\ 0x%B\ \ %l,%c%V\ %P  %=#%n %l/%L,%c%V"
+      else
+         " normal sl
+         let &stl="%F %y%([%R%M]%)%{'!'[&ff=='".&ff."']}%{'$'[!&list]} (%{synIDattr(synID(line('.'),col('.'),0),'name')})%=#%n %l/%L,%c%V"
+
+         " Show ascii value of current character
+         let &stl="%<%f%h%m%r%=%b\ 0x%B\ \ %l,%c%V\ %P"
+
+         " Show normal sl and ascii value of current character
+         let &stl="%F %y%([%R%M]%)%{'!'[&ff=='".&ff."']}%{'$'[!&list]} (%{synIDattr(synID(line('.'),col('.'),0),'name')})%r%=%b\ 0x%B\ \ %l,%c%V\ %P  %=#%n %l/%L,%c%V"
+      endif
+   endfunc
+   " Switch between the normal and vim-debug modes in the status line
+   nmap _ds :gall SetStatusLineStyle()<CR>
+   call SetStatusLineStyle()
+   " Window title
+   if has('title')
+      set titlestring=%t%(\ [%R%M]%)
+   endif
+endif
+" }}}
+
+" syntax highlighting
+syntax on
+"source $NOTES/syntax.vim
+
+filetype plugin indent on
+
+" default comment symbols
+let g:StartComment="#"
+let g:EndComment=""
+
+highlight Cursor gui=reverse guifg=NONE guibg=NONE
+set guicursor=i-n-v-c:block-Cursor
+set guicursor+=i-n-v-c:ver100-Cursor
+set guicursor+=i-n-v-c:blinkon0
+
+"set keymap=dvorak
+set keymap=fastdvorak
+set imsearch=0
+
+" enable mouse support (all)
+set mouse=a
+
+silent! set ttymouse=xterm2
+"silent! set ttymouse=xterm " no drag feedback but faster and less terminal codes and no glitches due to slowness
+
+set notimeout
+set nottimeout
+set nocscopeverbose
+
+"old glib syntax
+let glib_enable_deprecated = 1
+let glib_deprecated_errors = 1
+
+set nocscopeverbose
+
+set foldexpr=FoldBrace()
+"set foldmethod=expr
+
+" scrollbinding works vertically as well as horizontally
+set scrollopt=ver,jump,hor
+
+if ! &diff
+    silent! setlocal autochdir
+endif
+
+"for gf(go file)
+"doesn't work with overrided gf function
+set path+=../
+set path+=../../
+set path+=../../../
+set path+=../../../../
+set path+=../../../../../
+set path+=../../../../../../
+set path+=../../../../../../../
+
+" }}}
+
+" cinoptions
+" {{{
+set cino+=(0
+set cino+=:0
+set cino+=g0
+" }}}
+
+" functions/commands
+" {{{
+
+" open files with globbing
+" {{{
+command! -complete=file -nargs=+ Etabs call s:ETW('tabnew', <f-args>)
+command! -complete=file -nargs=+ Ewindows call s:ETW('new', <f-args>)
+command! -complete=file -nargs=+ Evwindows call s:ETW('vnew', <f-args>)
+command! -complete=file -nargs=+ Ebuffers call s:ETW('argadd', <f-args>)
+
+function! s:ETW(what, ...)
+  for f1 in a:000
+    let files = glob(f1)
+    if files == ''
+      execute a:what . ' ' . escape(f1, '\ "')
+    else
+      for f2 in split(files, "\n")
+        execute a:what . ' ' . escape(f2, '\ "')
+      endfor
+    endif
+  endfor
+endfunction
+" }}}
+
+" toggle quickfix window
+" {{{
+function! s:qf_toggle()
+    for i in range(1, winnr('$'))
+        let bnum = winbufnr(i)
+        if getbufvar(bnum, '&buftype') == 'quickfix'
+            cclose
+            return
+        endif
+    endfor
+
+    copen
+endfunction
+
+command! Ctoggle call s:qf_toggle()
+" }}}
+
+function! OpenFoldOnRestore()
+  if exists("b:doopenfold")
+    execute "normal zv"
+    if(b:doopenfold > 1)
+        execute "+".1
+    endif
+    unlet b:doopenfold
+  endif
+endfunction
+
+function! SphinxSearch(cmd)
+    silent! call system('vim-search-open-files-tmux.sh '.escape(shellescape(a:cmd),'"'))
+endfunction
+
+function! SphinxSearchExact(cmd)
+    silent! call system('vim-search-exact-open-files-tmux.sh '.escape(shellescape(a:cmd),'"'))
+endfunction
+
+fun! RunThisFile()
+    
+endf
+
+function! RunInTmux(cmd)
+    "let session = system('get-tmux-from-pid.sh '.getpid()." | awk '{print $2}'")
+    "silent! call system('tmux neww -n "vim-bash" "source ~/.bash_aliases;eval '.escape(shellescape(a:cmd),'"').'"')
+    "call system('TMUXFROM='.g:tmuxsession.' vim-run-in-tmux.sh '.escape(shellescape(a:cmd),'"'))
+    " this should not have been prefixed with TMUXFROM. work it out
+    " from the pid iff it's not given. every time. don't give it
+    " every time. i think that's what broke it.
+    call system('vim-run-in-tmux.sh '.escape(shellescape(a:cmd),'"'))
+    "silent! call system('TMUXFROM='.g:tmuxsession.' vim-run-in-tmux.sh '.escape(shellescape(a:cmd),'"'))
+endfunction
+
+function! RunInTmuxQueue(cmd)
+    silent! call system('tsp -f vim-run-in-tmux-queue.sh '.escape(shellescape(a:cmd),'"').' & disown')
+endfunction
+
+function! RunInTmuxBackground(cmd)
+    "silent! call system('tmux neww -n "vim-bash" "source ~/.bash_aliases;eval '.escape(shellescape(a:cmd),'"').'"')
+    silent! call system('TARGS=-d vim-run-in-tmux.sh '.escape(shellescape(a:cmd),'"'))
+endfunction
+
+function! RunInTmuxAnykey(cmd)
+    "silent! call system('tmux neww -n "vim-bash" "source ~/.bash_aliases;eval '.escape(shellescape(a:cmd),'"').'"')
+    silent! call system('vim-run-in-tmux.sh '.escape(shellescape('pressanykey.sh; '.a:cmd),'"'))
+endfunction
+
+" 'super retab' commands
+"
+" Return indent (all whitespace at start of a line), converted from
+" tabs to spaces if what = 1, or from spaces to tabs otherwise.
+" When converting to tabs, result has no redundant spaces.
+function! Indenting(indent, what, cols)
+  let spccol = repeat(' ', a:cols)
+  let result = substitute(a:indent, spccol, '\t', 'g')
+  let result = substitute(result, ' \+\ze\t', '', 'g')
+  if a:what == 1
+    let result = substitute(result, '\t', spccol, 'g')
+  endif
+  return result
+endfunction
+
+" Convert whitespace used for indenting (before first non-whitespace).
+" what = 0 (convert spaces to tabs), or 1 (convert tabs to spaces).
+" cols = string with number of columns per tab, or empty to use 'tabstop'.
+" The cursor position is restored, but the cursor will be in a different
+" column when the number of characters in the indent of the line is changed.
+function! IndentConvert(line1, line2, what, cols)
+  let savepos = getpos('.')
+  let cols = empty(a:cols) ? &tabstop : a:cols
+  execute a:line1 . ',' . a:line2 . 's/^\s\+/\=Indenting(submatch(0), a:what, cols)/e'
+  call histdel('search', -1)
+  call setpos('.', savepos)
+endfunction
+command! -nargs=? -range=% Space2Tab call IndentConvert(<line1>,<line2>,0,<q-args>)
+command! -nargs=? -range=% Tab2Space call IndentConvert(<line1>,<line2>,1,<q-args>)
+command! -nargs=? -range=% RetabIndent call IndentConvert(<line1>,<line2>,&et,<q-args>)
+
+function! s:DiffWithSaved()
+  let filetype=&filetype
+  diffthis
+  vnew | r # | normal! 1Gdd
+  diffthis
+  exe "setlocal bt=nofile bh=wipe nobl noswf ro filetype=" . filetype
+endfunction
+
+command! DiffSaved silent! call s:DiffWithSaved()
+
+function! MapToggle(key, opt)
+    let savepos = getpos('.')
+    "let cmd = ':echom "toggle '.opt.'" \| silent! windo set '.a:opt.'! \| silent! windo set '.a:opt."?\<CR>"
+    let cmd = ':silent! windo set '.a:opt.'! \| silent! windo set '.a:opt."?\<CR>"
+    exec 'nnoremap <silent> '.a:key.' '.cmd
+    exec 'inoremap <silent> '.a:key." \<C-O>".cmd
+    call setpos('.', savepos)
+endfunction
+
+command! -nargs=+ MapToggle call MapToggle(<f-args>)
+
+function! ToggleKeymap()
+    if &keymap == ""
+        set keymap=dvorak
+        set imsearch=0
+        echom "dvorak"
+    elseif &keymap == "dvorak"
+        set keymap=colemak
+        set imsearch=0
+        echom "colemak"
+    elseif &keymap == "colemak"
+        set keymap=dvorak-german
+        set imsearch=0
+        echom "dvorak-german"
+    else
+        set keymap=
+        set iminsert=0
+        echom "qwerty"
+    endif
+endfunction
+
+" automatically give executable permissions if file begins with #! and contains
+" '/bin/' in the path
+"use function! not function to overwrite
+function! ModeChange()
+  if getline(1) =~ "^#!"
+      silent !chmod a+x %
+  endif
+endfunction
+
+"let mapleader=","
+
+function! FoldBrace()
+  if getline(v:lnum+1)[0] == '{'
+    return '>1'
+  endif
+  if getline(v:lnum)[0] == '}'
+    return '<1'
+  endif
+  return foldlevel(v:lnum-1)
+endfunction
+
+function! MaximizeToggle()
+  if exists("s:maximize_session")
+    exec "source " . s:maximize_session
+    call delete(s:maximize_session)
+    unlet s:maximize_session
+    let &hidden=s:maximize_hidden_save
+    unlet s:maximize_hidden_save
+  else
+    let s:maximize_hidden_save = &hidden
+    let s:maximize_session = tempname()
+    set hidden
+    exec "mksession! " . s:maximize_session
+    only
+  endif
+endfunction
+
+augroup automatic_noeol
+  au!
+  au BufWritePre  * call <SID>TempSetBinaryForNoeol()
+  au BufWritePost * call <SID>TempRestoreBinaryForNoeol()
+augroup END
+
+function! s:TempSetBinaryForNoeol()
+  let s:save_binary = &binary
+  if ! &eol && ! &binary
+    let s:save_view = winsaveview()
+    setlocal binary
+    if &ff == "dos" || &ff == "mac"
+      if line('$') > 1
+        undojoin | exec "silent 1,$-1normal! A\<C-V>\<C-M>"
+      endif
+    endif
+    if &ff == "mac"
+      undojoin | %join!
+      " mac format does not use a \n anywhere, so we don't add one when writing
+      " in binary (which uses unix format always). However, inside the outer
+      " if statement, we already know that 'noeol' is set, so no special logic
+      " is needed.
+    endif
+  endif
+endfunction
+
+function! s:PreviousChange()
+    if &diff
+        normal [c
+    else
+        normal [h
+    endif
+endfunction
+command! PreviousChange call s:PreviousChange()
+
+function! s:NextChange()
+    if &diff
+        normal ]c
+    else
+        normal ]h
+    endif
+endfunction
+command! NextChange call s:NextChange()
+
+function! s:TempRestoreBinaryForNoeol()
+  if ! &eol && ! s:save_binary
+    if &ff == "dos"
+      if line('$') > 1
+        " Sometimes undojoin gives errors here, even when it shouldn't.
+        " Suppress them for now...if you can figure out and fix them instead,
+        " please update http://vim.wikia.com/wiki/VimTip1369
+        silent! undojoin | silent 1,$-1s/\r$//e
+      endif
+    elseif &ff == "mac"
+      " Sometimes undojoin gives errors here, even when it shouldn't.
+      " Suppress them for now...if you can figure out and fix them instead,
+      " please update http://vim.wikia.com/wiki/VimTip1369
+      silent! undojoin | silent %s/\r/\r/ge
+    endif
+    setlocal nobinary
+    call winrestview(s:save_view)
+  endif
+endfunction
+
+" return output of ex command (so can save to variable)
+funct! Exec(command)
+    redir =>output
+    silent exec a:command
+    redir END
+    return output
+endfunct!
+
+" output of ex command into new buffer
+function! Message(cmd)
+  redir => message
+  silent execute a:cmd
+  redir END
+  "vsplit
+  enew
+  silent put=message
+  set nomodified
+endfunction
+command! -nargs=+ -complete=command Message call Message(<q-args>)
+
+function! TabMessage(cmd)
+  redir => message
+  silent execute a:cmd
+  redir END
+  tabnew
+  silent put=message
+  set nomodified
+endfunction
+command! -nargs=+ -complete=command TabMessage call TabMessage(<q-args>)
+
+" removes buffers with [No Name] so that functions like grep do not act
+" on them
+function! CleanEmptyBuffers()
+  let buffers = filter(range(0, bufnr('$')), 'buflisted(v:val) && empty(bufname(v:val)) && bufwinnr(v:val)<0')
+  if !empty(buffers)
+    exe 'bw '.join(buffers, ' ')
+  endif
+endfunction
+
+function! Execute(cmd)
+  redir => output
+  execute a:cmd
+  redir END
+  return output
+endfunction
+
+"function EmulateLeftClick()
+"    let c = getchar()
+"    if c == "\<LeftMouse>" && v:mouse_win > 0
+"        exe v:mouse_win . "wincmd w"
+"        exe v:mouse_lnum
+"        exe "normal " . v:mouse_col . "|"
+"    endif
+"endfunction
+
+function! ReopenInVim()
+    if &modified
+        "bnum=bufnr('%')
+        only
+        DiffSaved
+        echo "File is modified, can't reopen. Fix changes and save"
+    else
+        silent! let path=expand('%:p')
+        silent! let cline=line(".")
+        silent! let ccol=col(".")
+        "silent! windo bd!
+        silent! windo call Bclose()!
+        " GitGutter stops working in the next vim instance when inside a
+        " difftool vimdiff because difftool is still running.
+        "silent! exec "!clear;vim +".cline." +\"call cursor(0, ".ccol.")\" \"".escape(path,"#")."\""
+        " Instead, kill the shell first then run next command.
+        silent! exec "!clear;vim +".cline." +\"call cursor(0, ".ccol.")\" \"".escape(path,"#")."\""
+        "silent! exec "!clear;tmux-vim.sh +".cline." +\"call cursor(0, ".ccol.")\" \"".escape(path,"#")."\""
+        "silent! exec "!clear;vim +".cline." \"".path."\""
+        silent! quit!
+    endif
+endfunction
+command! ReopenInVim call ReopenInVim()
+
+" }}}
+
+" fix annoying keymaps
+" {{{
+source $BULK/source/git/config/vim/fixkeymaps-vimrc
+
+" }}}
+
+" keymaps / mappings
+" {{{
+
+source ~/.vimmaprc
+
+function! OpenVimgrep(pattern)
+    exe "GrepBufs /".substitute(a:pattern, '\/', '\\/', 'g')."/ %"
+    exe "silent! below copen ".(winheight(0) / 2)
+endfunction
+
+nnoremap <leader>gi :call OpenVimgrep('<C-r>/')<CR>
+command! GREP :execute 'vimgrep '.expand('<cword>').' '.expand('%') | :belowright copen | :cc
+
+" This overrides a folding mapping
+"
+" This is still an important mapping because the vim you are currently
+" running may have been given extra command-line options, such as
+" disabling autochdir and you'd like to reopen the file as if vim had
+" been started normally.
+nmap Zv ;ReopenInVim<CR><C-w>p
+
+"imap p <C-r>*
+"inoremap p s<C-o>:set paste<CR><C-h><C-r>*<C-o>:set nopaste<CR>
+"imap p s<C-h><C-r>*
+
+function! InsertPaste(before)
+    let pos=getpos(".")
+    let win=winsaveview()
+    if getline(".") =~ '^$' || a:before
+        normal! P
+    else
+        normal! p
+        let pos[2]+=1
+    endif
+    "call winrestview(win)
+    "call setpos(".",pos)
+    startinsert
+endfunction
+
+"nmap <leader>tb ;TagbarOpen fj<CR>
+nmap <leader>tb ;TagbarToggle<CR>
+
+nnoremap <leader>um :%!minimise.sh<CR>
+xnoremap <leader>um :!minimise.sh<CR>
+nnoremap <leader>uu :%!unminimise.sh<CR>
+xnoremap <leader>uu :!unminimise.sh<CR>
+
+inoremap p s<C-h><left><C-o>:call InsertPaste(0)<CR>
+inoremap P s<C-h><C-o>:call InsertPaste(1)<CR>
+
+nmap <C-^> ;echo "USE gl, ca OR cm"<CR>
+
+nnoremap ca <C-^>
+nnoremap cm <C-^>
+
+nnoremap Z? :Message map<CR>
+
+" select next and previous paragraph
+nmap ]p }<Space>vip
+nmap [p {<BS>vip
+nmap [o [p
+nmap ]o ]p
+xmap ]p <Esc>}<Space>vip
+xmap [p <Esc>{<BS>vip
+xmap [o [p
+xmap ]o ]p
+
+function! EasySave()
+    try
+        silent! normal ;wa
+        echom "Saved"
+    catch 
+        echom "Could not save. Read-only?"
+    endtry
+endfunction
+
+nnoremap <leader>um :%!minimise.sh<CR>
+"save with M-; M-;
+cmap <silent> ; call EasySave()<CR>
+
+"quit with M-; M-o
+cmap o <C-c>;qa<CR>
+
+" quit vim when using with ranger
+cmap  o
+
+" open in full vim (not fastvim)
+" need gv for saving and restoring visual selection
+"map gv ;silent! bdelete | silent! !bash -c "gvim.sh % &disown" | execute ';redraw!'
+
+" select pasted text
+nnoremap viP `[v`]
+
+nnoremap <Leader>gs :Gstatus<CR>
+nnoremap <Leader>gb :Gblame<CR>
+
+"nmap <Delete> ;bdelete!<CR>
+" Stop delete key from deleting the buffer
+" Because it is bound to C-M-u in tmux
+"nmap <Delete> <NOP>
+
+" Make C-g from inside command mode work like emacs, in that in
+" cancels any current operation.
+cmap  
+
+"nmap yc ggVGy
+nmap yc ggVG
+
+map  <left>
+map  <right>
+map  <up>
+map <C-J> <down>
+
+" having these are more important than being able to quickly enter
+" easymotion.
+imap  <left>
+imap  <right>
+imap  <up>
+imap <C-J> <down>
+
+" important fix (hopefully there are no escape code conflicts)
+imap $ l$
+
+" Emacs-like line inserts (not sure if there is a way already)
+nnoremap <ESC>, a<CR><ESC>
+nnoremap <ESC>< i<CR><ESC>
+
+" gf always opens even if file doesnt exist
+" " this has been superceeded in gf_ext.vim
+"noremap gf :e <cfile><CR>
+
+xnoremap t lt
+xnoremap T hT
+
+"xnoremap $ $h
+xnoremap $ g_
+xnoremap g_ $
+
+xnoremap . s<C-R>.
+
+" the commented bit doesn't work unfortunately
+"set <M-C-h> <C-h>
+"inoremap <M-C-h> <Left>
+inoremap <C-h> <Left>
+
+" These two lines prevents mistakes when doing o<M-$> to insert a new
+" line starting with $
+" Make more of these, so that can hold down M more often -- more
+" comfortable.
+" These symbols are of importance because of how the left hand uses them
+" !@#$
+" Not sure why @ needs to work differently
+if ! has('nvim')
+    " Only works in vim, not nvim
+    set <M-$>=$
+endif
+" need this for going to the end of a line after editing something.
+"inoremap <M-$> $
+nnoremap <M-$> $
+xnoremap <M-$> <ESC>$
+
+" don't want to do ^
+
+nmap <C-w>h <C-w>h
+nmap <C-w>l <C-w>l
+nmap <silent> g<C-w>k ;let linenum=getpos('.')[1]\|:wincmd k\|;call cursor(linenum,0)<cr>
+nmap <silent> g<C-w>i ;let linenum=getpos('.')[1]\|:wincmd i\|;call cursor(linenum,0)<cr>
+nmap <silent> g<C-w>h ;let linenum=getpos('.')[1]\|:wincmd h\|;call cursor(linenum,0)<cr>
+nmap <silent> g<C-w>l ;let linenum=getpos('.')[1]\|:wincmd l\|;call cursor(linenum,0)<cr>
+nmap <silent> <C-w><down> ;let linenum=getpos('.')[1]\|:wincmd k\|;call cursor(linenum,0)<cr>
+nmap <silent> <C-w><up> ;let linenum=getpos('.')[1]\|:wincmd i\|;call cursor(linenum,0)<cr>
+nmap <silent> <C-w><left> ;let linenum=getpos('.')[1]\|:wincmd h\|;call cursor(linenum,0)<cr>
+nmap <silent> <C-w><right> ;let linenum=getpos('.')[1]\|:wincmd l\|;call cursor(linenum,0)<cr>
+nmap <silent> <C-w>w ;let linenum=getpos('.')[1]\|:wincmd w\|;call cursor(linenum,0)<cr>
+nmap <silent> <C-w><C-w> <C-w>w
+
+nnoremap vi$ ^v$h<C-o>echom "Use Y"<CR>
+
+nmap <silent> ZP Y"zy;call SphinxSearch(@z)<CR>
+xmap <silent> ZP "zy;call SphinxSearch(@z)<CR>
+
+nmap <silent> Z{ Y"zy;call SphinxSearchExact(@z)<CR>
+xmap <silent> Z{ "zy;call SphinxSearchExact(@z)<CR>
+
+" Execute line/selection in bash
+" using nnoremap (for : instead of ;) seems to only work on the first time i press ZX
+" this has not fixed the problem. what is causing it to only run once?
+nmap ZX ;normal Y<CR>"zy;call RunInTmux(@z)<CR>
+xmap ZX "zy;call RunInTmux(@z)<CR>
+"nmap <silent> ZX ;normal Y<CR>"zy;call RunInTmux(@z)<CR>
+"xmap <silent> ZX "zy;call RunInTmux(@z)<CR>
+
+" Make this run in a right split 
+nmap <silent> Zxc Y"zy;call RunInTmux(@z)<CR>
+xmap <silent> Zxc "zy;call RunInTmux(@z)<CR>
+
+nmap <silent> Z: Y"zy;call RunInTmuxQueue(@z)<CR>
+xmap <silent> Z: "zy;call RunInTmuxQueue(@z)<CR>
+nmap <silent> Zxv Y"zy;call RunInTmuxBackground(@z)<CR>
+xmap <silent> Zxv "zy;call RunInTmuxBackground(@z)<CR>
+nmap <silent> Zxf Y"zy;call RunInTmuxAnykey(@z)<CR>
+xmap <silent> Zxf "zy;call RunInTmuxAnykey(@z)<CR>
+"nmap Zx ;echo "USE ZX"<CR>
+"xmap Zx <ESC>;echo "USE ZX"<CR>
+
+nmap <silent> g/ ;call RunInTmux("tmux-fs-notes.sh \"".expand("%:pj")."\"")<CR>
+nmap <silent> g? ;call RunInTmux("tmux-fs-notes.sh \"".matchstr(expand("%:pj"),"^.*/")."\"")<CR>
+"nmap <silent> g<space> ;call RunInTmux("get-fs-notes.sh \"".matchstr(expand("%:pj"),"^.*/")."\" \| less -S")<CR>
+nmap <silent> g<space> ;call RunInTmux("get-fs-notes.sh \"".expand("%:pj")."\" \| vim -")<CR>
+
+" I want lazyredraw to work when these happen! But it doesn't!
+" This still runs a lot faster than simply mapping <C-o> to <C-o>zz
+function! BackJump()
+    normal! 1zz
+endfunction
+function! ForwardJump()
+    normal! 1	zz
+endfunction
+nnoremap <C-o> :call BackJump()<CR>
+nnoremap <C-i> :call ForwardJump()<CR>
+"try to get <C-i><C-i> doing forward jump (havent found a way yet)
+" the prob is it's the same as tab
+
+" when in normal mode, I want space to be like PgDn
+" <Space> is useful. it goes to the next character and doesn't stop at
+" the end of the line.
+"nmap <Space> <C-d>
+nmap <End> ZQ
+nmap <kEnd> ZQ
+nmap <Home> ;wall<CR>
+"nmap - ;w!<CR>
+"nmap = ;dbelete!<CR>
+" <BS> is useful. it goes to the previous character and doesn't stop at
+" the beginnign of the line.
+"nmap <BS> ;e!<CR>
+nmap Z<BS> ;e!<CR>
+nmap Zd ;DiffSaved<CR>
+
+imap <C-d> <Delete>
+
+nmap zM zMzz
+
+" these function allows you to put a number prefix before <C-u>, which
+" means before <C-b> as well in our case.
+" Note: The <C-U> is required to remove the line range that you get when
+" typing ':' after a count.
+function! ScrollUp(count)
+    let c=count
+    if ! c > 0
+        let c=1
+    endif
+    let c = c * 2
+    for i in range(1, c)
+        normal! 
+    endfor
+endfunction
+function! ScrollDown(count)
+    let c=count
+    if ! c > 0
+        let c=1
+    endif
+    let c = c * 2
+    for i in range(1, c)
+        normal! 
+    endfor
+endfunction
+function! HalfscrollUp(count)
+    let c=count
+    if ! c > 0
+        let c=1
+    endif
+    for i in range(1, c)
+        normal! 
+    endfor
+endfunction
+function! HalfscrollDown(count)
+    let c=count
+    if ! c > 0
+        let c=1
+    endif
+    for i in range(1, c)
+        normal! 
+    endfor
+endfunction
+
+nnoremap <silent> <C-u> :<C-U>call HalfscrollUp(v:count1)<CR>
+nnoremap <silent> <C-d> :<C-U>call HalfscrollDown(v:count1)<CR>
+nnoremap <silent> <C-b> :<C-U>call ScrollUp(v:count1)<CR>
+nnoremap <silent> <C-f> :<C-U>call ScrollDown(v:count1)<CR>
+nnoremap <silent> <pageup> :<C-U>call ScrollUp(v:count1)<CR>
+nnoremap <silent> <pagedown> :<C-U>call ScrollDown(v:count1)<CR>
+"nmap <pageup> ;PreviousChange<CR>zz
+"nmap <pagedown> ;NextChange<CR>zz
+
+nnoremap y/ /<up><C-f><left>v0y<C-c><C-c>
+nmap 1<C-g> ;echo expand('%:p')<CR>
+nmap 2<C-g> ;echo @%<CR>
+
+" allows you to put the z register into the clipboard instead of
+" highlighting all that again
+
+nmap zy ;let @*=@z<CR>
+
+" Overridden in goto-definition.vim
+nmap <2-LeftMouse> *
+xmap <2-LeftMouse> *
+
+nmap <RightMouse> *
+xmap <RightMouse> *
+
+"" This was driving me insane
+"" xmap <RightMouse> "zy;CtrlPLine<CR><C-r><C-\>rZ
+"" Yay it does nothing now
+"xmap <RightMouse> <NOP>
+
+"nmap <RightMouse> ;call EmulateLeftClick()<CR>
+
+""nmap <RightMouse> ;!xdotool click 1<CR>;call StartCheckSameSearchHighlight("vit")<CR>
+"nmap <RightMouse> ;let x = system('bash -c "sleep 1 && xdotool click 1 &"')<CR>
+""zy;CtrlPLine<CR><C-r><C-\>rZ
+
+
+"function! SearchNotLineStartingWith(pattern)
+"endfunction
+"
+xmap gU "zy;LocateFile <C-R>z<CR>
+nmap gU ;LocateFile 
+xmap gu "zy;LocateEdit <C-R>z<CR>
+nmap gu ;LocateEdit 
+nmap ch ;bprev<CR>
+nmap cl ;bnext<CR>
+nmap gt gt
+
+"nmap n nzz
+"nmap N Nzz
+"i actually think it's more natural to not zz when searching
+"backwards.
+"actually, im disabling both of those
+xmap n *nzz
+" as a rule, reduce the amount of screen updating. it's confusing
+
+nmap gd gdzt
+
+vmap gd *gg0n
+"vmap gd <Esc>gdzt
+
+function! MovePercent(signedpercent)
+    let step = abs(a:signedpercent) * winheight(0) / 100
+    if a:signedpercent < 0
+        for i in range(1,step)
+            normal! 
+        endfor
+    elseif a:signedpercent > 0
+        for i in range(1,step)
+            normal! 
+        endfor
+    endif
+endfunction
+
+"nnoremap <C-t> <C-y>
+"nnoremap <C-e> :silent! call MovePercent(-10)<CR>
+"nnoremap <C-t> :silent! call MovePercent(10)<CR>
+nnoremap <C-e> :call MovePercent(-10)<CR>
+nnoremap <C-t> :call MovePercent(10)<CR>
+
+nnoremap <ScrollWheelUp> 6<C-y>
+map <S-ScrollWheelUp> 6<C-U>
+nnoremap <ScrollWheelDown> 6<C-e>
+map <S-ScrollWheelDown> 6<C-D>
+
+function! OpenClipInWin()
+    let cmd = "tmux-vim-pipe.sh ".&ft
+    silent! call system(cmd, @z)
+endfunction
+xmap <CR> "zy;silent! call OpenClipInWin()<CR>"
+"xmap <CR> "zy;call system('echo '.shellescape(@z).' \| tmux-vim.sh -c "set ft='.&ft.'"')<CR>
+
+" Will get a segfault with -nosplash
+nmap Ze ;silent! !eclipse-edit.sh "%:p"<CR><C-l>
+
+"nmap ZJ ;ls<CR>
+"nmap Zt ;mksession! $SESSION_FILE<CR>
+xmap Zgd "zy;silent! !CWD="%:p:h";result="${CWD\#\#*/}";tmux neww -c "%:p:h" -n "δ-<C-r>z" "CWD=\"%:p:h\" zsh -c \"git difftool <C-R>"\\^\!\""<CR>
+nmap Zgd vit"zy;silent! !CWD="%:p:h";result="${CWD\#\#*/}";tmux neww -c "%:p:h" -n "δ-<C-r>z" "CWD=\"%:p:h\" zsh -c \"git difftool <C-R>"\\^\!\""<CR>
+" Find file in repo using ack
+xmap ZO "zy;silent! AckFile! '<C-R>z' "`git rev-parse --show-toplevel`"<CR>
+" Find file in project using CtrlP
+nmap Zgf viq"zy;CtrlP<CR><C-\>rZ
+xmap Zgf "zy;CtrlP<CR><C-\>rZ
+" Grep buffers using CtrlP
+
+" see ruby's gd here
+" /home/shane/versioned/git/config/vim/vim/ftplugin/ruby.vim
+" There is no way to grep repo using CtrlP
+nmap ZY vit"zy;CtrlPLine<CR><C-\>rZ
+xmap ZY "zy;CtrlPLine<CR><C-\>rZ
+" Grep buffers using CtrlP regex
+nmap <C-s> ;CtrlPLine<CR>
+nmap ZM ;echo "USE <C-s>"<CR>
+xmap ZM "zy;CtrlPLine<CR><C-r><C-\>rZ
+" Grep files in repo using ack
+nmap ZN ;silent! AckFromSearch! "`git rev-parse --show-toplevel`"<CR>
+" this relies on the new * mapping
+xmap ZN *ZN
+"would be nice if quickfix auto-updated, but this doesn't really work
+"and is also laggy
+"nmap [u ;cprev<bar>Ctoggle<bar>Ctoggle<CR>
+nmap [u ;cprev<CR>
+nmap ]u ;cnext<CR>
+nmap [e ;ERRP<CR>
+nmap ]e ;ERR<CR>
+nmap [/ 0;COMP<CR>
+nmap ]/ $;COM<CR>
+nmap ZU ;Ctoggle<CR>
+"nmap ZI ;bd!<CR>
+
+function! BufJumpDelete()
+    exe "jd ^=expand('%:p')<CR>$"
+    "bdelete
+    call Bclose()
+endfunction
+
+function! XMLFormat()
+    exe "%!xmllint --encode UTF-8 --format - 2>/dev/null"
+endfunction
+
+command! XMLFormat call XMLFormat()
+
+function! AckTop(pattern)
+    set hls
+    let path = system('get-project-dir.sh')
+    " The ! makes it so ack doesn't open the first file it finds
+    exe 'silent! let @/="'.a:pattern.'" | Ack! -- ' . a:pattern . ' ' . path
+    silent! cclose
+    exe "silent! below copen ".(winheight(0) / 2)
+    set modifiable
+    %!minimise.sh
+endfunction
+command! -nargs=+ AckTop call AckTop(<q-args>)
+
+nmap Zu ;set syntax=underscore_template<CR>
+
+" improve this. it's not possible to do an automatic <Tab> expand here
+
+" Ack
+" Reasons to use ack-grep vs grep
+" ∙ Blazingly fast
+"       Only searches stuff that makes sense to search.
+" ∙ Better search
+"       Searches entire trees by default while ignoring Subversion, Git
+"       and other VCS directories and other files that aren't your
+"       source code.
+" ∙ Designed for code search
+"       Where grep is a general text search tool, ack is especially for
+"       the programmer searching source code. Common tasks take fewer
+"       keystrokes.
+
+" grep
+    " Search current directory
+        " copied text
+        nmap ZH ;silent! Ack! '<C-R>"' "%:p:h"<CR>
+        " selected text
+        xmap ZH "zy;silent! Ack! '<C-R>z' "%:p:h"<CR>
+        xmap ZJ "zy;silent! !CWD="%:p:h";result="${CWD\#\#*/}";tmux neww -c "%:p:h" -n "grep" "CWD=\"%:p:h\" zsh -c \"tmux-grep-from-top-git.sh '<C-R>z' regex-insensitive\""<CR>
+        nmap ZJ ;silent! !CWD="%:p:h";result="${CWD\#\#*/}";tmux neww -c "%:p:h" -n "grep" "CWD=\"%:p:h\" zsh -c \"tmux-grep-from-top-git.sh '' regex-insensitive\""<CR>
+
+    " In new window, search git repository
+        " case-insensitive
+        xmap ZI "zy;silent! !CWD="%:p:h";result="${CWD\#\#*/}";tmux neww -c "%:p:h" -n "grep" "CWD=\"%:p:h\" zsh -c \"tmux-grep-from-top-git.sh '<C-R>z' insensitive\""<CR>
+        nmap ZI ;silent! !CWD="%:p:h";result="${CWD\#\#*/}";tmux neww -c "%:p:h" -n "grep" "CWD=\"%:p:h\" zsh -c \"tmux-grep-from-top-git.sh '' insensitive\""<CR>
+        " regex with template
+        xmap ZR "zy;silent! !CWD="%:p:h";result="${CWD\#\#*/}";tmux neww -c "%:p:h" -n "grep" "CWD=\"%:p:h\" zsh -c \"tmux-grep-from-top-git.sh '<C-R>z' regex-template\""<CR>
+        " regex
+        nmap ZR ;silent! !CWD="%:p:h";result="${CWD\#\#*/}";tmux neww -c "%:p:h" -n "grep" "CWD=\"%:p:h\" zsh -c \"tmux-grep-from-top-git.sh '' regex\""<CR>
+        " plain
+        nmap ZF ;AckTop 
+        nmap ZK ;let @" = @*<CR>ZF
+        xmap ZK yZK
+        xmap ZF y;let @/ = @"<bar>AckTop <C-R>"<CR> 
+        xmap ZG "zy;silent! !CWD="%:p:h";result="${CWD\#\#*/}";tmux neww -c "%:p:h" -n "grep" "CWD=\"%:p:h\" zsh -c \"tmux-grep-from-top-git.sh '<C-R>z' ''\""<CR>
+        " plain, already copied
+        nmap ZG ;silent! !CWD="%:p:h";result="${CWD\#\#*/}";tmux neww -c "%:p:h" -n "grep" "CWD=\"%:p:h\" zsh -c \"tmux-grep-from-top-git.sh '' ''\""<CR>
+
+" shell
+    " Open new      window in current directory
+    nmap ZB ;silent! !tmux-vim-split.sh "%:p:h"<CR>
+    " Open new wide window in current directory
+    nmap ZC ;silent! !tmux-vim-split.sh "%:p:h" -v<CR>
+    " Open new tall window in current directory
+    nmap ZV ;silent! !tmux-vim-split.sh "%:p:h" -h<CR>
+    " Open new tall ranger in current directory
+    nmap ZL ;silent! !tmux-vim-split.sh "%:p:h" -r<CR>
+
+"nmap Zr ;silent! !CWD="%:p:h";result="${CWD\#\#*/}";tmux splitw -h -c "%:p:h" "source ~/.profile; CWD=\"%:p:h\" bash -c "./%"\|less"<CR>
+nmap Zr ;silent! !CWD="%:p:h";result="${CWD\#\#*/}";tmux splitw -h -c "%:p:h" "source ~/.profile; CWD=\"%:p:h\" rifle.sh %"<CR>
+
+" this command runs the current line in bash
+" this does the equivalent of selecting a line with Y
+" see http://goo.gl/shpJrm
+
+" unhighlight word under cursor
+fun! UnLightUpCurrent()
+    if &ft != 'fugitiveblame'
+        match IncSearch ''
+    endif
+endf
+
+" highlight word under cursor
+fun! LightUpCurrent()
+    if &ft != 'fugitiveblame'
+        exe printf('match IncSearch /\V\<%s\>/', escape(expand('<cword>'), '/\'))
+    endif
+endf
+
+autocmd CursorMoved * call LightUpCurrent()
+" useful but too distracting
+"autocmd CursorMoved * call UnLightUpCurrent()
+"autocmd CursorMovedI * call UnLightUpCurrent()
+"autocmd CursorHold * call LightUpCurrent()
+"autocmd CursorHoldI * call LightUpCurrent()
+
+nmap <silent> Zl ;silent! .w !bash &>/dev/null<CR>
+xmap N <Plug>Narrow
+xmap D <Plug>NarrowAndDiff
+map w <Plug>CamelCaseMotion_w
+map b <Plug>CamelCaseMotion_b
+map e <Plug>CamelCaseMotion_e
+omap iw <Plug>CamelCaseMotion_iw
+xmap iw <Plug>CamelCaseMotion_iw
+omap ib <Plug>CamelCaseMotion_ib
+xmap ib <Plug>CamelCaseMotion_ib
+omap ie <Plug>CamelCaseMotion_ie
+xmap ie <Plug>CamelCaseMotion_ie
+nmap cw ce
+omap iw ie
+xmap iw ie
+nmap vit ;normal! viw<CR>
+nmap vir ;call SelectWordAndDots()<cr>
+nmap viq ;call SelectArgument()<cr>
+" this approach interferes with camelcasemotion. instead add to the camelcasemotion regex.
+"nmap viw ;call SelectWithoutHash()<cr>
+
+"imap <C-w> ;set eventignore=InsertEnter,InsertLeavevlbs;set eventignore=
+imap <C-w> vlbs
+nmap <C-w><C-c> <NOP>
+nmap ]? ;exe '/\%'.virtcol('.').'v\S'<CR>
+nmap [? ;exe '?\%'.virtcol('.').'v\S'<CR>
+xmap ]? <C-c>;exe '/\%'.virtcol('.').'v\S'<CR>mxgv`x
+xmap [? <C-c>;exe '?\%'.virtcol('.').'v\S'<CR>mxgv`x
+nmap <silent> <Leader>( ;Git diff HEAD\^\! -- %<CR><C-L>
+"nmap <silent> <Leader>8 ;silent! !vim-commit-respawn.sh <BAR> redraw!<CR>
+
+function! AmendRespawn()
+    !vim-amend-respawn.sh
+    redraw!
+endfunction
+
+function! CommitRespawn()
+    !vim-commit-respawn.sh
+    redraw!
+endfunction
+
+nmap <silent> <Leader>7 ;silent! call AmendRespawn()<CR>
+nmap <silent> <Leader>8 ;silent! call CommitRespawn()<CR>
+nmap <silent> <Leader>9 ;Git difftool HEAD\^\! -- %<CR><C-L>
+"nmap <silent> <Leader>; ;Git diff -- %<CR><C-L>
+"nmap <silent> <Leader>: ;Git diff --cached -- %<CR><C-L>
+nmap <silent> <Leader>; ;silent !difftool.sh<CR><C-L>
+nmap <silent> <Leader>: ;silent !vimgstatus<CR><C-L>
+nmap <silent> <Leader>' ;silent !git d -- %<CR><C-L>
+nmap <silent> <Leader>" ;silent !git d --cached -- %<CR><C-L>
+nmap <silent> <Leader>* ;silent !difftool.sh HEAD\^:<CR><C-L>
+
+"nmap <silent> <Leader>= ;silent !git dp  %<CR><C-L>
+"map <silent> <Leader>= ;<C-U>silent !git dp % v:count1<CR><C-L>
+
+function! DiffPrevRev(count)
+    exe "silent !git dp ".expand("%")." ".count
+    redraw!
+endfunction
+
+command! -nargs=1 DiffPrevRev call DiffPrevRev(<args>)
+map <silent> <Leader>= ;<C-U>DiffPrevRev(v:count1)<CR>
+
+function! DiffSinceBranch(count)
+    exe "silent !git pb ".expand("%")." ".count
+    redraw!
+endfunction
+
+command! -nargs=1 DiffSinceBranch call DiffSinceBranch(<args>)
+map <silent> <Leader>- ;<C-U>DiffSinceBranch(v:count1)<CR>
+
+"function! SelectWithoutHash()
+"    set iskeyword-=#
+"    normal! viw
+"    set iskeyword+=#
+"endfunction
+
+function! SelectWordAndDots()
+    set iskeyword+=.
+    set iskeyword+=-
+    normal! viw
+    set iskeyword-=.
+    set iskeyword-=-
+endfunction
+
+" It would be nice if this function could work out what () it should
+" select. I.e. You're selecting an argument inside a pair of parenthesis
+" and the argument has parenthesis itself, so only select the pair
+" belonging to the argument.
+function! SelectArgument()
+    set iskeyword+=.
+    set iskeyword+=-
+    set iskeyword+=[
+    set iskeyword+=]
+    "set iskeyword+== "why equals?
+    set iskeyword+='
+    set iskeyword+="
+    normal! viw
+    set iskeyword-=.
+    set iskeyword-=-
+    set iskeyword-=[
+    set iskeyword-=]
+    "set iskeyword-== "why equals?
+    set iskeyword-='
+    set iskeyword-="
+endfunction
+
+" insert css
+function! ScratchBufOpen(filetype)
+    new
+    setlocal buftype=nofile
+    setlocal bufhidden=hide
+    setlocal noswapfile
+    exe 'setlocal filetype=' . a:filetype
+    nnoremap <buffer> <leader>x :call ScratchBufClose()<cr>
+endfunction
+
+function! ScratchBufClose()
+    normal! gg0vG$y
+    bwipe
+    normal! Pl
+endfunction
+
+nnoremap <leader>x :call ScratchBufOpen('css')<cr>
+
+
+function! HTMLEncode()
+    exe "%!perl -C -MHTML::Entities -pe 'encode_entities($_);'"
+    redraw!
+endfunction
+
+function! HTMLDecode()
+    exe "%!perl -C -MHTML::Entities -pe 'decode_entities($_);'"
+    redraw!
+endfunction
+
+command! HTMLEncode :silent! call HTMLEncode()
+command! HTMLDecode :silent! call HTMLDecode()
+
+" counters the issue with smartindent that affects making comments in
+" python (puts comment on the first column).
+inoremap # X#
+
+" go to last tab
+"let g:lasttab = 1
+"nnoremap gl :exe "tabn ".g:lasttab<CR>
+"au TabLeave * let g:lasttab = tabpagenr()
+" now does the same al C-6
+nnoremap gl <C-^>
+
+" use this before F7
+inoremap <F2> <Esc>hl
+
+function! QuitIfNoName()
+    " if from stdin, i.e. [ No Name ]
+    if bufname('%') == ''
+        bd!
+    endif
+    bd " quit anyway
+    q
+endfunction
+
+command! QuitIfNoName :silent! call QuitIfNoName()
+
+" unmap annoying keys
+nnoremap K <Nop>
+nnoremap q: <Nop>
+nnoremap q/ <Nop>
+nnoremap q? <Nop>
+" remapped (was annoying) Q to quit is the some behavior as elinks.
+nnoremap Q :QuitIfNoName<CR>
+" This may prevent tab characters being inserted if tab completion does
+" not work but it also disables tab completion.
+"cnoremap <Tab> <Nop>
+
+" This makes it faster to do ;<C-f> or ;<C-r>
+"   -- can do <C-;><C-f>
+"nnoremap <C-;> ;
+nnoremap [27;5;59~ :
+
+"nmap K ge
+nnoremap ZQ :qa!<CR>
+
+" quicker buffer navigation
+nnoremap <C-n> :CtrlPBuffer<CR>
+imap <C-b> <Left>
+imap <C-f> <Right>
+
+" save the current file as root
+cmap w!! w !sudo tee % >/dev/null<CR>:e!<CR><CR>
+
+" <S-F4> etc. wont work
+" have to set nopaste then insert <S-F4> to get the correct sequence
+MapToggle <F4> foldenable
+MapToggle <F5> number
+MapToggle <F6> spell
+MapToggle <F7> paste
+"MapToggle <F8> list
+"MapToggle <F8> hlsearch
+MapToggle <F9> wrap
+
+"" add command to toggle diff highlighting
+"if &diff
+"else
+    noremap <silent> <F3> :silent! call ToggleDiffSyntax() \| call DiffSyntaxStatus()<CR>
+    "noremap <silent> <F3> :silent! call ToggleDiffSyntax()<CR>:call DiffSyntaxStatus()<CR>
+"endif
+    noremap <silent> <F2> :call ToggleKeymap()<CR>
+
+"Sadly this interferes with vim-sneak
+"Hardcode into vim?
+"swap colon and semicolon
+nnoremap ; :
+nnoremap : ;
+vnoremap ; :
+vnoremap : ;
+
+" This fixes select-mode when needing to enter dvorak letters (e.g. in
+" snipmate)
+sunmap ;
+
+"swap j with gj and k with gk
+nnoremap j gj
+nnoremap k gk
+xnoremap j gj
+xnoremap k gk
+nnoremap gj j
+nnoremap gk k
+xnoremap gj j
+xnoremap gk k
+
+"swap quote and backtick
+nnoremap ' `
+nnoremap ` '
+
+vnoremap <TAB> :RetabIndent<CR>
+
+"au FileType python au BufWritePre *.py :%s/\s+$//e
+"noremap <F11> :update<CR>
+
+nnoremap <F1> :h<BAR>only<CR>
+
+nnoremap t% :call MaximizeToggle ()<CR>
+
+
+" insert date <S-F8>
+nnoremap <F8> "=strftime("%c")<CR>P
+inoremap <F8> <C-R>=strftime("%c")<CR>
+cnoremap <F8> <C-R>=strftime("%c")<CR>
+" See fixkeymaps-vimrc
+
+"" English definition of highlighted word
+"xmap <silent> Zdd "zxi<C-R>=system('sdcv '.@z)<CR><ESC>;normal! `[v`]<CR>h
+xmap <silent> Zdd "zy;call RunInTmux('sdcv '.@z.'\|less')<CR>
+nmap <silent> Zdd viw"zy;call RunInTmux('sdcv '.@z.'\|less')<CR>
+"xmap <silent> Zx "zy;call RunInTmux(@z)<CR>
+"nmap <silent> Zx Y"zy;call RunInTmux(@z)<CR>
+
+"nmap w wi
+"nmap b bi
+"nmap e ei
+
+" }}}
+
+" autocommands
+" {{{
+if has('autocmd')
+    autocmd BufWrite * if &diff | diffu | endif
+
+    au FileType vim  set foldmethod=marker
+
+    augroup vimrc
+        au BufReadPre * setlocal foldmethod=manual
+    augroup END
+
+    autocmd BufEnter * if &filetype == "" | setlocal ft=txt | endif
+
+    au BufWritePost * silent call ModeChange()
+endif
+" }}}
+
+" after
+" {{{
+
+
+" plugin settings
+" {{{
+" Added a -f to follow symlinks. Is this OK?
+let g:ackprg = 'ag -f --nogroup --nocolor --column'
+
+let g:ycm_filetype_specific_completion_to_disable = {
+      \ 'java' : 1,
+      \ 'php' : 1
+      \}
+
+" Default: allow all
+"let g:ycm_filetype_whitelist = { '*': 1 }
+let g:ycm_filetype_whitelist = {
+      \ 'python' : 1,
+      \ 'cpp' : 1
+      \}
+
+let g:ycm_filetype_blacklist = { '*': 1 }
+"let g:ycm_filetype_blacklist = {
+"      \ 'java' : 1,
+"      \ 'php' : 1,
+"      \ 'tagbar' : 1,
+"      \ 'qf' : 1,
+"      \ 'notes' : 1,
+"      \ 'markdown' : 1,
+"      \ 'unite' : 1,
+"      \ 'text' : 1,
+"      \ 'vimwiki' : 1,
+"      \ 'pandoc' : 1,
+"      \ 'infolog' : 1,
+"      \ 'mail' : 1
+"      \}
+
+let g:EclimCompletionMethod = 'omnifunc'
+
+let g:locateopen_exactly = 0
+let g:ctrlp_by_filename = 0
+let g:EclimLocateFileDefaultAction = 'edit'
+let g:jedi#use_tabs_not_buffers = 0
+let g:jedi#popup_on_dot = 1
+
+"let g:tmuxcomplete#trigger = 'completefunc'
+
+" let g:ycm_show_diagnostics_ui = 0
+"this doesnt seem to have any effect
+let g:use_zen_complete_tag = 1
+" syntax highlighting is messed up by this
+"let g:EasyMotion_do_shade = 0
+
+let g:EasyMotion_leader_key = '<Leader><Leader>'
+" <S-Tab> doesn't work in insert mode
+" ∵ M-S-Tab == S-Tab == [Z
+" using Q can do forward search in insert mode
+"let g:EasyMotion_mapping_w = '<C-j>'
+"let g:EasyMotion_mapping_b = '<C-k>'
+"nmap <C-k> <Plug>(easymotion-bd-w)
+"xmap <C-k> <Plug>(easymotion-bd-w)
+nmap <C-k> <Plug>(easymotion-cc)
+xmap <C-k> <Plug>(easymotion-cc)
+" Experimenting with creating a matrix over everything
+" This will only work if there are spaces instead of emptiness because
+" vim's search doesn't look at emptyness (ie. after end of line).
+" Could use tmux's C-M-d and add spaces (min line width) where there is
+" nothing.
+"nmap <C-k> <Plug>(easymotion-vc)
+"xmap <C-k> <Plug>(easymotion-vc)
+
+let g:indent_guides_auto_colors = 0
+let g:indent_guides_start_level = 2
+let g:indent_guides_guide_size = 1
+let g:indent_guides_default_mapping = 0
+let g:indent_guides_enable_on_vim_startup = 1
+
+" syntastic
+" {{{
+"
+let g:syntastic_check_on_open=1
+let g:syntastic_html_tidy_ignore_errors=[" proprietary attribute \"ng-"]
+" }}}
+
+" ctrl-p
+" {{{
+"
+"let g:ctrlp_user_command = 'find -L %s -type f'
+"let g:ctrlp_custom_ignore = '\v[\/]\.(git|hg|svn)$'
+"let g:follow_symlinks = 1
+"ignore hidden files and folders and binary files
+let g:ctrlp_user_command = 'find -L %s -not -path "*/\.*" -type f -exec grep -Il . {} \;'
+let g:ctrlp_max_height = 50
+
+" }}}
+
+" vim-javascript
+" {{{
+let g:javascript_conceal_function   = "ƒ"
+let g:javascript_conceal_null       = "ø"
+let g:javascript_conceal_this       = "@"
+let g:javascript_conceal_return     = "⇚"
+let g:javascript_conceal_undefined  = "¿"
+let g:javascript_conceal_NaN        = "ℕ"
+let g:javascript_conceal_prototype  = "¶"
+let g:javascript_conceal_static     = "•"
+let g:javascript_conceal_super      = "Ω"
+" }}}
+
+" YCM configs
+" {{{
+let g:jedi#goto_definitions_command = "Zi"
+let g:ycm_global_ycm_extra_conf = ''
+let g:ycm_confirm_extra_conf = 0
+
+" this is in seconds
+" https://docs.python.org/3.1/library/urllib.request.html
+let g:tern_request_timeout = 10
+
+" need this for compatibility with gitgutter
+let g:ycm_enable_diagnostic_signs = 0
+
+set cscopequickfix=s+,c+,d+,i+,t+,e+,g+
+
+" }}}
+" }}}
+" }}}
+
+" Whyyyyyy
+call SetStatusLineStyle()
+
+""" NERDCommenter
+"let NERDCreateDefaultMappings=0 " disable default mappings
+let NERDMenuMode=0              " disable menu
+let NERDSpaceDelims=1           " place spaces after comment chars
+let NERDDefaultNesting=0        " don't recomment commented lines
+
+" Easily GREP current word in current file so results are shown in
+" quickfix
+command! GREP :execute 'vimgrep '.expand('<cword>').' '.expand('%') | :copen | :cc
+
+" delete buffer without closing window
+function! Bclose()
+    let curbufnr = bufnr("%")
+    let altbufnr = bufnr("#")
+    if buflisted(altbufnr)
+        buffer #
+    else
+        bnext
+    endif
+    if bufnr("%") == curbufnr
+        new
+    endif
+    if buflisted(curbufnr)
+        execute("bdelete! " . curbufnr)
+    endif
+endfunction
+
+" For navigating with mouse, enter (go def) and C-o, C-i (forwards and
+" backwards) efficiently
+map Rm <C-o>
+map Rt <C-i>
+
+map Om <C-o>
+map Ok <C-i>
+
+command! Tlist :TagbarToggle
+
+"This is so YCM will fall back to eclim
+let b:ycm_omnicomplete = 1
+"However, this is also necessary:
+"setlocal omnifunc=eclim#c#complete#CodeComplete
+"setlocal omnifunc=eclim#python#complete#CodeComplete
+let g:EclimCCallHierarchyDefaultAction = 'edit'
+
+function! SavePos()
+    silent! call system("save-cursor-position.sh ".screencol()." ".screenrow()."& disown")
+endfunction
+
+"let g:tagbar_left = 1
+
+"au CursorMoved * silent call SavePos()
+
+" Get line numbers by extracting from a log file using sed and pipe them
+" line by line into a vim command which displays the trace order and
+" highlights non-touched lines.
+function! ShowTrace(logfile)
+    let i = 1
+    for NUM in split(system('cat '.a:logfile.' | get-trace-nums.sh '.expand('%:t')), '\n')
+        exe "normal ".NUM."GA #".i
+        let i = i + 1
+    endfor
+    g!/#\d\+$/normal 
+endfunction
+command! -nargs=+ ShowTrace call ShowTrace(<q-args>)
+
+function! DuplicateBuffer()
+    enew
+    silent! r!cat #
+    bd #
+endfunction
+
+command! DuplicateBuffer call DuplicateBuffer()
+
+function! ShowResults()
+    let origname = @%
+    DuplicateBuffer
+    set number
+    set ft=grep
+    set ls=0
+    silent! call ToggleBrightness()
+    silent! call ToggleBrightness()
+    silent! EraseBadWhitespace
+    silent! AnsiEscMinimiseColorize
+    if origname =~ 'cppcheck'
+        silent! %!SEDOPTS=' ' minimise.sh | SEDOPTS=' ' colorize-cppcheck.sh
+    else
+        silent! %!SEDOPTS=' ' minimise.sh | SEDOPTS=' ' colorize-hil-test.sh
+    endif
+    silent! AnsiEsc
+endfunction
+
+command! ShowResults call ShowResults()
+
+
+iab i.. i.e.
+iab g.. e.g.
+
+iab i. i.e.
+iab g. e.g.
+
+" Typos and incorrect spelling
+iab calender calendar
+
+iab xn Xuan
+
+" MapNoContext (abbreviations that can check what preceded. i.e. Can
+" emulate multi-word abbreviations).
+" https://github.com/sunlightlabs/hacks/blob/master/topics/vim/vim-iab.md
+"iab "time<space>put<space>in" "time<space>spent"
+
+" Don't forget: headings are here
+" $BULK/s*/g*/c*/v*/vim/ftplugin/text.vijm
+
+function! BufToTmux()
+  cd /
+  redir => vimbufs
+  silent ls
+  redir END
+  cd -
+  silent! let a = system("vim-buffers-to-twin.sh", vimbufs)
+  echom "Opening buffers into tmux windows."
+endfunction
+command! BufToTmux call BufToTmux()
+
+noremap <silent> tp :call BufToTmux()<CR>
+
+let g:MRU_Use_Current_Window = 1
+
+function! OpenShell()
+  silent! let a = system("tmux-vim-open-shell.sh \"".&ft."\"")
+  echom "Opening ".&ft." shell"
+endfunction
+command! OpenShell call OpenShell()
+
+noremap <silent> tl :call OpenShell()<CR>
+
+let g:MRU_Max_Entries = 100000
+
+function! RandomPosition()
+    let pc = system("echo -n \"$(( $RANDOM % 100 ))\"")
+    exe("normal! ".pc."%")
+endfunction
+
+noremap <leader>p :!makepublic.sh %<CR>
+
+"function! SearchForClipboard()
+"    set hls
+"    let nomagicquery = '\V' . substitute(@*, '\/', '\\\/', 'g')
+"    silent! exe "normal! /".nomagicquery.""
+"endfunction
+
+function! SearchClipboard()
+    set hls
+    let @/ = '\V' . escape(@*, '\')
+    normal! n
+endfunction
+
+"command! SearchForClipboard call SearchForClipboard()
+nnoremap Zn :call SearchClipboard()<CR>
+
+function! BuffersList()
+  let all = range(0, bufnr('$'))
+  let res = []
+  for b in all
+    if buflisted(b)
+      call add(res, bufname(b))
+    endif
+  endfor
+  return res
+endfunction
+
+function! GrepBuffers (expression)
+  exec 'vimgrep/'.a:expression.'/ '.join(BuffersList())
+endfunction
+
+command! -nargs=+ GrepBufs call GrepBuffers(<q-args>)
+
+
+" This is amazing but also a little maddening
+let g:idle_time = 0
+let g:typing_time = 0
+let g:based = 0
+let g:hidecolums = 0
+function! TmuxBaseWait()
+    "silent! call system('echo "bn:'.bufname('%').' ft:'.&ft.'" >> /tmp/hithernoe')
+    "" Checking filename is empty is for glossaries
+    if g:hidecolums == 1 && g:typing_time > 0 && ! &diff && &ft != 'man' && bufname('%') != '' && bufname('%') != 'ControlP'
+        " This breaks ctrlp. Find out what the buffer name is called
+        " I have disabled colvim
+        " vim +39 $BULK/local/bin/colvim
+        only
+    endif
+    "if g:based == 0 && g:typing_time >= 0
+    ""if g:based == 0
+    "    "set nocursorline " this is not responsible for the refreshing. Neither does it break this function. It's still bad. See below
+    "    "make the whole of vim redraw
+    "    call system('tmux run -b tmux-base-here.sh')
+    "    let g:based = 1
+    "    " I wish this wasn't necessary, but it is because vim sucks at
+    "    " async commands.
+    "    normal! 
+    "endif
+    let g:typing_time = g:typing_time + 1
+    let g:idle_time = 0
+    "echom 'based: '.g:based.' typing time: '.g:typing_time.' idle time: '.g:idle_time
+endfunction
+
+function! TmuxUnbase()
+    if g:based == 1
+        " try to work out the bugs
+        call system('tmux run -b tmux-base-localhost.sh')
+        let g:based = 0
+        " I wish this wasn't necessary, but it is because vim sucks at
+        " async commands.
+        "normal! 
+    endif
+    let g:typing_time = 0
+    "echom 'based: '.g:based.' typing time: '.g:typing_time.' idle time: '.g:idle_time
+    "windo set cursorline " Can't do this because it sometimes changes
+    "which window you are in
+endfunction
+
+"au CursorMoved * echom 'hi'.g:based
+"au CursorMovedI * echom 'hi'.g:based
+"au CursorHold * echom 'hi'.g:based
+"au CursorHoldI * echom 'hi'.g:based
+
+" Had to disable this because it broke ctrlp. But the functionality
+" for closing extra columns is more important.
+augroup auto_tmux_collapse
+  au!
+  au CursorMoved * silent! call TmuxBaseWait()
+  "au CursorMovedI * silent! call TmuxBaseWait()
+  "au CursorHold * silent! call TmuxUnbase()
+  "au CursorHoldI * silent! call TmuxUnbase()
+
+  "au CursorMoved * call TmuxBaseWait()
+  "au CursorMovedI * call TmuxBaseWait()
+  "au CursorHold * call TmuxUnbase()
+  "au CursorHoldI * call TmuxUnbase()
+  "au InsertEnter * call TmuxBaseWait()
+  "au InsertLeave * call TmuxUnbase()
+  "au FocusGained * call TmuxBaseWait()
+  "au FocusLost * call TmuxUnbase()
+augroup END
+
+" TextChangedI
+" InsertEnter
+
+function! ForceQuit()
+    "silent! call TmuxUnbase()
+    normal! :qa!
+endfunction
+
+command! ForceQuit silent! call ForceQuit()
+
+
+let g:ycm_allow_changing_updatetime = 0
+set updatetime=500
+"set updatetime=1000
+"set updatetime=1500
+"set updatetime=10000
+
+
+"" Trigger configuration. Do not use <tab> if you use https://github.com/Valloric/YouCompleteMe.
+"let g:UltiSnipsExpandTrigger="<tab>"
+"let g:UltiSnipsJumpForwardTrigger="<c-b>"
+"let g:UltiSnipsJumpBackwardTrigger="<c-z>"
+
+"" If you want :UltiSnipsEdit to split your window.
+""let g:UltiSnipsEditSplit="vertical"
+
+"let g:snips_trigger_key = '<c-e>'
+"let g:snips_trigger_key_backwards = '<c-z>'
+
+function! IncrementSearchString()
+    if ! empty(@/)
+        let @/ = system("php $VAS/local/bin/increment-numeric-part.php", @/)
+    endif
+endfunction
+map <Esc>n ;call IncrementSearchString()<CR>n100zH
+
+function! DecrementSearchString()
+    if ! empty(@/)
+        let @/ = system("php $VAS/local/bin/decrement-numeric-part.php", @/)
+    endif
+endfunction
+map <Esc>N ;call DecrementSearchString()<CR>N100zH
+
+" M-n and M-N work very similarly to n and N, but they change the
+" increment. It's perfect
+
+let g:tmuxsession = system('get-tmux-from-pid.sh '.getpid()." | awk '{print $2}' | tr -d '\n'")
+
+let g:rainbow_active = 1
+
+inoreab hilite highlight
+inoreab hilight highlight
+inoremap U <Esc>vUa
+inoremap I <Esc>vbUea
+inoremap C <Esc>vbuvUea
+inoremap L <Esc>bveuea
+inoremap T <Esc>bbvUea
+inoremap R <Esc>bbbvUea
+imap K <Esc>0<c-k>
+"inoremap C <C-o>`[<Right><Esc>vUea
+inoremap : <Esc>0/\a<CR>0NnvUA
+inoremap P <Esc>F<Space>xA
+inoremap D <Esc>^i<Tab><Esc>A
+" make it so this is undoable.
+inoremap F <Esc>:set spell<CR>[s1z=:set nospell<CR>A
+
+function! MyCoolFunction(anArg)
+python << endpython
+import vim
+anArg = vim.eval("a:anArg")
+# do important stuff
+vim.command("return 1") # return from the Vim function!
+endpython
+endfunction
+
+" make functions to run 'normal' commands in paste mode (or even
+" better, with an option enabled)
+fun! OpenLineUp()
+    set paste
+    normal! O
+    set nopaste
+endf
+fun! OpenLineDown()
+    set paste
+    normal! o
+    set nopaste
+endf
+
+nnoremap Y ^vg_o

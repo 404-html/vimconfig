@@ -1,0 +1,13 @@
+language: vim
+
+before_script: |
+  hg clone https://code.google.com/p/vim/
+  cd vim
+  ./configure --with-features=huge --enable-rubyinterp --enable-pythoninterp
+  make
+  sudo make install
+  cd -
+
+script: |
+  export PATH="/usr/local/bin:$PATH"
+  ./test/run-tests.sh

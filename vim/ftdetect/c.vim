@@ -1,0 +1,1 @@
+../../common/ftdetect/c.vim

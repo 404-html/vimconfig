@@ -1,0 +1,2 @@
+nmap gO ;call append(line('.')-1, '')<CR>^ki
+nmap go ;call append(line('.'), '')<CR>^ji

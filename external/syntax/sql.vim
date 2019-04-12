@@ -1,0 +1,1 @@
+../../../../vim-sql/syntax/sql.vim

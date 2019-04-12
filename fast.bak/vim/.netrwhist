@@ -1,0 +1,6 @@
+let g:netrw_dirhistmax  =10
+let g:netrw_dirhist_cnt =4
+let g:netrw_dirhist_1='/export/bulk/local-home/smulliga/source/git/config/vim/common/bundle/syntastic/syntax_checkers/llvm'
+let g:netrw_dirhist_2='/home/smulliga/.config/chromium/Default'
+let g:netrw_dirhist_3='/export/bulk/local-home/smulliga/source/git/config/vim'
+let g:netrw_dirhist_4='/export/bulk/local-home/smulliga/source/git/config/vim/vim/bundle/vim-fugitive'

@@ -1,0 +1,1 @@
+magictags was putting tag files in every repository

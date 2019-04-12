@@ -1,0 +1,10 @@
+let g:netrw_dirhistmax  =10
+let g:netrw_dirhist_cnt =8
+let g:netrw_dirhist_1='/var/smulliga/notes'
+let g:netrw_dirhist_2='/export/bulk/local-home/smulliga/personal/passwords-25.08.16/bnz'
+let g:netrw_dirhist_3='/var/smulliga/notes'
+let g:netrw_dirhist_4='/export/bulk/local-home/smulliga/homedir/.adobe'
+let g:netrw_dirhist_5='/var/smulliga/notes'
+let g:netrw_dirhist_6='/var/smulliga/notes/ws/crown-rtc/people/callum-robinson'
+let g:netrw_dirhist_7='/var/smulliga/notes'
+let g:netrw_dirhist_8='/var/smulliga/notes/ebl2'

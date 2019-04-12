@@ -1,0 +1,8 @@
+supertab.vba: call delete('/Users/smulligan/.vim/doc/supertab.txt')|call delete('/Users/smulligan/.vim/plugin/supertab.vim')
+qfn.vba: call delete('/home/smulligan/.vim/plugin/qfn.vim')|call delete('/home/smulligan/.vim/doc/qfn.txt')
+colourscheme_bandit.vba: call delete('/home/smulligan/.vim/colors/bandit.vim')|call delete('/home/smulligan/.vim/syntax/colours_bandit.vim')|call delete('/home/smulligan/.vim/ftplugin/colours_bandit.vim')
+markdown-1.2.2.vba: call delete('/Users/shane/.vim/ftdetect/markdown.vim')|call delete('/Users/shane/.vim/snippets/markdown.snippets')|call delete('/Users/shane/.vim/syntax/markdown.vim')
+camelcasemotion.vba: call delete('/home/shane/.vim/autoload/camelcasemotion.vim')|call delete('/home/shane/.vim/plugin/camelcasemotion.vim')|call delete('/home/shane/.vim/doc/camelcasemotion.txt')
+AnsiEsc.vba: call delete('/home/shane/.vim/plugin/AnsiEscPlugin.vim')|call delete('/home/shane/.vim/autoload/AnsiEsc.vim')|call delete('/home/shane/.vim/plugin/cecutil.vim')|call delete('/home/shane/.vim/doc/AnsiEsc.txt')
+QuickFixCurrentNumber-1.00.vmb: call delete('/home/shane/.vim/autoload/QuickFixCurrentNumber.vim')|call delete('/home/shane/.vim/plugin/QuickFixCurrentNumber.vim')|call delete('/home/shane/.vim/doc/QuickFixCurrentNumber.txt')
+swapstrings.vba: call delete('/var/smulliga/source/git/config/vim/vim/plugin/swapstringsPlugin.vim')|call delete('/var/smulliga/source/git/config/vim/vim/doc/swapstrings.txt')|call delete('/var/smulliga/source/git/config/vim/vim/autoload/swapstrings.vim')

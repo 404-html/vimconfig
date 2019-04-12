@@ -1,0 +1,6 @@
+gf-ext	gf_ext.txt	/*gf-ext*
+gf-ext-:gf_ext#add_handler	gf_ext.txt	/*gf-ext-:gf_ext#add_handler*
+gf-ext-about	gf_ext.txt	/*gf-ext-about*
+gf-ext-functions	gf_ext.txt	/*gf-ext-functions*
+gf-ext-usage	gf_ext.txt	/*gf-ext-usage*
+gf_ext.txt	gf_ext.txt	/*gf_ext.txt*

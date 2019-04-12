@@ -1,0 +1,1 @@
+/var/smulliga/local/share/vim/vim80/ftplugin/lisp.vim

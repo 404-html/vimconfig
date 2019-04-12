@@ -1,0 +1,1 @@
+../../../../../build/git/scss-syntax.vim/syntax/scss.vim
